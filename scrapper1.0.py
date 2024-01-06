@@ -9,19 +9,31 @@ from selenium.webdriver.support import expected_conditions as EC
 
 def login(username, password):
     # Navigate to the login page
-    driver.get('https://www.publisuites.com/advertisers/en/')  # Replace with the actual login page URL
-    time.sleep(2)  # Add a delay to let the page load
+    driver.get('https://www.publisuites.com/en/login/')  # Replace with the actual login page URL
+    time.sleep(5)  # Add a delay to let the page load
+
+    # Check if a pop-up is present (replace with the actual conditions for your pop-up)
+    try:
+        pop_up = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.ID, 'didomi-popup'))
+        )
+
+        # Handle the pop-up (replace with the actual actions you want to perform)
+        accept_button = pop_up.find_element(By.ID, 'didomi-notice-agree-button')
+        accept_button.click()
+        print("success")
+
+    except:
+        # No pop-up found or timed out waiting for the pop-up
+        print("faild")
+        pass
+
 
     # Find the username and password input fields and submit button
-
-    # Replace with the actual name attribute of the username field
     username_field = driver.find_element(By.NAME, 'email')  
-    # Replace with the actual name attribute of the password field
     password_field = driver.find_element(By.NAME, 'password')  
-    # Replace with the actual name attribute of the submit button
-    submit_button = driver.find_element(By.CLASS_NAME, "btn")  
+    submit_button = driver.find_element(By.CLASS_NAME, "submitbuttonadvertisers")  
     
-
     # Enter the username and password
     username_field.send_keys(username)
     password_field.send_keys(password)
@@ -37,39 +49,27 @@ def login(username, password):
 
     time.sleep(5)
 
-    new_url = 'https://www.publisuites.com/advertisers/websites/'
-    driver.get(new_url)
-    
-    time.sleep(5)
-    
-    # # Navigate to the table to scrape
-    # target_href = "https://www.publisuites.com/advertisers/websites/"
-    # click_specific_sidebar_element(target_href)
-
-
-
-
 
 def click_specific_sidebar_element(target_href):
-    # Replace with the logic to locate and click on the specific sidebar element
-    # ul_list = driver.find_element(By.CLASS_NAME, 'app-menu')
-    li_elements = driver.find_elements(By.CLASS_NAME, 'has-submenu')
+    # Look for the specific link where the table is, by gathering all 'a' elements
+    a_elements = driver.find_elements(By.TAG_NAME, 'a')
 
-    for li_element in li_elements:
-        print(li_element)
-
-        # a_element = li_element.find_element(By.CSS_SELECTOR, 'a')
-        # if a_element.get_attribute('href') == target_href:
-        #     a_element.click()
-        #     print('element found')
-        #     break
-
-
+    for a_element in a_elements:
+        if a_element.get_attribute('href') == target_href:
+            a_element.click()
+            break
+    
 
 def scrape_table():
-
+    
     soup = BeautifulSoup(driver.page_source, 'html.parser')
      
+    # Open table for scraping
+    table_button = driver.find_element(By.CLASS_NAME, 'fa-grip-lines')
+    table_button.click()
+
+    time.sleep(5)
+
     # Locate the table on the page
     table = driver.find_element(By.CLASS_NAME, 'table')
 
@@ -90,7 +90,6 @@ def scrape_table():
 
 
 
-
 # Set the initial URL
 base_url = 'https://www.publisuites.com/advertisers/en/'
 login_username = 'gserangelo@gmail.com'
@@ -98,11 +97,16 @@ login_password = 'rl2023'
 
 # Set up the Safari webdriver (replace '/path/to/safaridriver' with the actual path)
 driver = webdriver.Safari()
+driver.set_window_size(1200, 800)
 
 # Log in to the website
 login(login_username, login_password)
-
-
+# Access table page
+target_href = 'https://www.publisuites.com/advertisers/websites/'
+click_specific_sidebar_element(target_href)
+time.sleep(5)
+# Scrape Table
+scrape_table()
 
 driver.quit()
 
