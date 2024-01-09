@@ -64,31 +64,6 @@ def click_specific_sidebar_element(target_href):
     table_button.click()
 
     time.sleep(5)
-    
-
-def scrape_table():
-    
-    soup = BeautifulSoup(driver.page_source, 'html.parser')
-
-    # Locate the table on the page
-    table = driver.find_element(By.CLASS_NAME, 'table')
-
-    header = []
-    rows = []
-    if table:
-        # then we can iterate through each row and extract either header or row values:
-        for row in table.find_elements(By.TAG_NAME, 'tr'):
-            rows.append([el.text.strip() for el in row.find_elements(By.TAG_NAME, 'td')])
-
-        # Create a CSV file and write data
-        with open('Publisuits_Data.csv', 'a', newline='', encoding='utf-8') as csvfile:
-            csv_writer = csv.writer(csvfile)
-            csv_writer.writerows(rows)        
-
-    else:
-        print('table was not found')
-
-
 
 
 # Set the initial URL
@@ -107,25 +82,8 @@ login(login_username, login_password)
 target_href = 'https://www.publisuites.com/advertisers/websites/'
 click_specific_sidebar_element(target_href)
 
-
-for number in range(2, 512):
-    time.sleep(5)
-    scrape_table()
-    pages = driver.find_elements(By.CLASS_NAME, 'page-item')
-    for page in pages:
-        if page.text == str(number):
-            print("page clicked", " ", number)
-            # Remember the current URL before clicking the link
-            current_url = driver.current_url
-
-            # Click on the link
-            tag = page.find_element(By.TAG_NAME, 'a')
-            tag.click()
-
-            break
-
-    time.sleep(5)
-
-
-driver.quit()
-
+pages = driver.find_elements(By.CLASS_NAME, 'page-item')
+for page in pages:
+    if page.text == 2:
+        page.click()
+        time.sleep(5)
