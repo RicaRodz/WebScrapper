@@ -24,8 +24,7 @@ def login(username, password):
         
 
     except:
-        # No pop-up found or timed out waiting for the pop-up
-        pass
+        pass # No pop-up found or timed out waiting for the pop-up
 
 
     # Find the username and password input fields and submit button
@@ -50,6 +49,7 @@ def login(username, password):
 
 
 def click_specific_sidebar_element(target_href):
+    time.sleep(5)
     # Look for the specific link where the table is, by gathering all 'a' elements
     a_elements = driver.find_elements(By.TAG_NAME, 'a')
 
@@ -58,11 +58,16 @@ def click_specific_sidebar_element(target_href):
             a_element.click()
             break
 
-    time.sleep(10)
-    # Open table for scraping
-    table_button = driver.find_element(By.CLASS_NAME, 'fa-grip-lines')
-    table_button.click()
+    # Wait for url to change
+    WebDriverWait(driver, 10).until(
+        EC.url_to_be(target_href)
+    )
 
+    # Open table for scraping
+    table_button = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CLASS_NAME, 'fa-grip-lines'))
+        )
+    table_button.click()
     time.sleep(5)
     
 
@@ -70,20 +75,66 @@ def scrape_table():
     
     soup = BeautifulSoup(driver.page_source, 'html.parser')
 
+    # try chatch error -- Must continue/wait for table to load
     # Locate the table on the page
-    table = driver.find_element(By.CLASS_NAME, 'table')
+    table = WebDriverWait(driver, 30).until(
+            EC.presence_of_element_located((By.CLASS_NAME, 'table')))
 
-    header = []
+    
     rows = []
     if table:
         # then we can iterate through each row and extract either header or row values:
         for row in table.find_elements(By.TAG_NAME, 'tr'):
             rows.append([el.text.strip() for el in row.find_elements(By.TAG_NAME, 'td')])
+        
+
+        # Scrape pop up information
+        a_elements = driver.find_elements(By.TAG_NAME, 'a')
+        for a in a_elements:
+            if a.get_attribute('class') == 'btn btn-black-v2 btn-xs blank pointer':
+                try:
+                    a.click()
+                    # Wait for pop up to load
+                    pop_up = WebDriverWait(driver, 10).until(
+                        EC.presence_of_element_located((By.CLASS_NAME, 'modal-content'))
+                    )
+                except:
+                    pass
+
+        # Scrape all 'p' elements
+        pop_up = driver.find_element(By.CLASS_NAME, 'modal-content')
+        info = pop_up.find_elements(By.TAG_NAME, 'p')
+        for text in info:
+            print(text.text())
+            # Description
+            # if text.get_attribute("class") == 'p-v2 p-11' or text.get_attribute("class") == 'p-v2 p-11 m-b-0' or text.get_attribute("class") == 'p-v2 p-11 p-icon-press' or text.get_attribute("class") == 'p-v2 p-12 p-icon-press':
+            #    rows.append(text.text())
+                # print(text.text())
+
+
+        # Country and Language
+        # Links:
+            # Max Links
+            # Sponsored
+            # Follow
+        # Places of Publication:
+            # Main Page
+            # Related Categories
+        # Max Number of Images
+        
+
+
+        # Categories
+        # Topics not Accepted
+
+        # Extend info to rows
+
+
 
         # Create a CSV file and write data
-        with open('Publisuits_Data.csv', 'a', newline='', encoding='utf-8') as csvfile:
-            csv_writer = csv.writer(csvfile)
-            csv_writer.writerows(rows)        
+        # with open('test.csv', 'a', newline='', encoding='utf-8') as csvfile:
+        #     csv_writer = csv.writer(csvfile)
+        #     csv_writer.writerows(rows)        
 
     else:
         print('table was not found')
@@ -107,25 +158,25 @@ login(login_username, login_password)
 target_href = 'https://www.publisuites.com/advertisers/websites/'
 click_specific_sidebar_element(target_href)
 
+scrape_table()
 
-for number in range(2, 512):
-    time.sleep(5)
-    scrape_table()
-    pages = driver.find_elements(By.CLASS_NAME, 'page-item')
-    for page in pages:
-        if page.text == str(number):
-            print("page clicked", " ", number)
-            # Remember the current URL before clicking the link
-            current_url = driver.current_url
+# # Stopped at 358
+# for number in range(2, 5):
+#     time.sleep(5)
+#     scrape_table()
+#     pages = driver.find_elements(By.CLASS_NAME, 'page-item')
+#     for page in pages:
+#         if page.text == str(number):
+#             print("page clicked", " ", number)
 
-            # Click on the link
-            tag = page.find_element(By.TAG_NAME, 'a')
-            tag.click()
+#             # Click on the link
+#             tag = page.find_element(By.TAG_NAME, 'a')
+#             tag.click()
 
-            break
+#             break
 
-    time.sleep(5)
+#     time.sleep(5)
 
 
-driver.quit()
+# driver.quit()
 
