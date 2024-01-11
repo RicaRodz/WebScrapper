@@ -1,20 +1,18 @@
 import time
-import csv
-from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
-def login(username, password):
+def login(username, password, driver):
     # Navigate to the login page
     driver.get('https://www.publisuites.com/en/login/')  # Replace with the actual login page URL
     time.sleep(5)  # Add a delay to let the page load
 
     # Check if a pop-up is present (replace with the actual conditions for your pop-up)
     try:
-        pop_up = WebDriverWait(driver, 10).until(
+        pop_up = WebDriverWait(driver, 20).until(
             EC.presence_of_element_located((By.ID, 'didomi-popup'))
         )
 
@@ -41,49 +39,9 @@ def login(username, password):
     submit_button.click()
 
     # Wait for the login to complete (you might need to adjust the conditions)
-    WebDriverWait(driver, 10).until(
+    WebDriverWait(driver, 20).until(
         # Replace with the URL that changes after successful login
         EC.url_changes('https://www.publisuites.com/advertisers/')
     )
 
-    time.sleep(5)
-
-
-def click_specific_sidebar_element(target_href):
-    # Look for the specific link where the table is, by gathering all 'a' elements
-    a_elements = driver.find_elements(By.TAG_NAME, 'a')
-
-    for a_element in a_elements:
-        if a_element.get_attribute('href') == target_href:
-            a_element.click()
-            break
-
     time.sleep(10)
-    # Open table for scraping
-    table_button = driver.find_element(By.CLASS_NAME, 'fa-grip-lines')
-    table_button.click()
-
-    time.sleep(5)
-
-
-# Set the initial URL
-base_url = 'https://www.publisuites.com/advertisers/en/'
-login_username = 'gserangelo@gmail.com'
-login_password = 'rl2023'
-
-# Set up the Safari webdriver (replace '/path/to/safaridriver' with the actual path)
-driver = webdriver.Safari()
-driver.set_window_size(1400, 900)
-
-# Log in to the website
-login(login_username, login_password)
-
-# Access table page
-target_href = 'https://www.publisuites.com/advertisers/websites/'
-click_specific_sidebar_element(target_href)
-
-pages = driver.find_elements(By.CLASS_NAME, 'page-item')
-for page in pages:
-    if page.text == 2:
-        page.click()
-        time.sleep(5)
